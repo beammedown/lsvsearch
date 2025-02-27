@@ -16,7 +16,7 @@ const ColorScheme brightscheme = ColorScheme(
 const ColorScheme darkscheme = ColorScheme(
   brightness: Brightness.dark,
   primary: Color.fromRGBO(55, 65, 81,1),
-  onPrimary: Color.fromRGBO(252, 249, 243, 1),
+  onPrimary: Color.fromRGBO(146, 166, 255, 1),
   secondary: Color.fromRGBO(61, 69, 62, 1),
   onSecondary: Color.fromRGBO(252, 249, 243, 1),
   error: Color.fromRGBO(98, 19, 19, 1),
