@@ -1,4 +1,3 @@
-import 'package:fluent_ui/fluent_ui.dart' as fluentui;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:meilisearch/meilisearch.dart';
@@ -120,15 +119,19 @@ class _MyHomePageState extends State<MyHomePage> {
                 content.replaceAll("\\n", "\n\n"),
               ),
             ),
-            TextButton(
+            FractionallySizedBox(
+              widthFactor: 0.8,
+              child: TextButton(
                 onPressed: () {
                   Navigator.of(context).pop();
                 },
-                style: const ButtonStyle(
+                style: ButtonStyle(
                   padding: WidgetStatePropertyAll(
                       EdgeInsets.only(top: 20, bottom: 20)),
                 ),
-                child: const Text("Zurück"))
+                child: const Text("Zurück")),
+            )
+            
           ]);
         });
   }
@@ -136,48 +139,18 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Theme.of(context).colorScheme.primary,
-        title: Text(widget.title),
-        centerTitle: true,
-        actions: [
-          Padding(
-              padding: EdgeInsets.only(right: 20.0),
-              child: Container(
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.all(Radius.circular(10)),
-                  color: _hoversAppBarButton ? Theme.of(context).colorScheme.secondary : Theme.of(context).colorScheme.primary,
-                ),
-                child: GestureDetector(
-                onTap: () {},
-                child: MouseRegion(
-                  onEnter: (event) {
-                    setState(() {
-                      _hoversAppBarButton = true;
-                    });
-                  },
-                  onExit: (event) {
-                    setState(() {
-                      _hoversAppBarButton = false;
-                    });
-                  },
-                  child: Icon(
-                  Icons.search,
-                  size: 26.0,
-                ),
-                ),
-                ),
-                
-              )),
-        ],
-      ),
       body: Center(
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
+          mainAxisAlignment: MainAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.center,
           children: <Widget>[
-            MaxGap(MediaQuery.of(context).size.height * 0.1),
+            MaxGap(MediaQuery.of(context).size.height * 0.05),
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
             SizedBox(
-              width: MediaQuery.of(context).size.width * 0.85,
+              width: MediaQuery.of(context).size.width * 0.8,
               child: TextField(
                 controller: _controller,
                 decoration: InputDecoration(
@@ -191,6 +164,20 @@ class _MyHomePageState extends State<MyHomePage> {
                 },
               ),
             ),
+            MaxGap(20),
+            IconButton(onPressed: () {},
+            highlightColor: Colors.transparent, //Theme.of(context).colorScheme.secondary.withAlpha(255),
+            hoverColor: Theme.of(context).colorScheme.secondary,
+             icon: Icon(fluent_icons.FluentIcons.settings_16_filled),
+            ),
+              ],
+            ),
+            MaxGap(10),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+              TextButton(onPressed: () {}, child: Text("Filter")),
+            ],),
             const MaxGap(20),
             FutureBuilder(
                 future: _ergebnisse,
@@ -229,8 +216,14 @@ class _MyHomePageState extends State<MyHomePage> {
                         ),
                       ));
                     }
+                    if (scrollitems.isEmpty) {
+                      return SizedBox(
+                        height: MediaQuery.sizeOf(context).height*0.85,
+                        child: Text("Keine Ergebnisse")
+                      );
+                    }
                     return SizedBox(
-                      height: MediaQuery.of(context).size.height * 0.79,
+                      height: MediaQuery.of(context).size.height * 0.85,
                       child: ListView(
                         children: scrollitems,
                       ),

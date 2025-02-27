@@ -15,13 +15,13 @@ const ColorScheme brightscheme = ColorScheme(
     );
 const ColorScheme darkscheme = ColorScheme(
   brightness: Brightness.dark,
-  primary: Color.fromRGBO(180, 134, 49, 1),
+  primary: Color.fromRGBO(55, 65, 81,1),
   onPrimary: Color.fromRGBO(252, 249, 243, 1),
-  secondary: Color.fromRGBO(29, 109, 44, 1),
+  secondary: Color.fromRGBO(61, 69, 62, 1),
   onSecondary: Color.fromRGBO(252, 249, 243, 1),
   error: Color.fromRGBO(98, 19, 19, 1),
   onError: Color.fromRGBO(252, 249, 243, 1),
-  surface: Color.fromRGBO(26, 19, 7, 1),
+  surface: Color.fromRGBO(3, 7, 18, 1),
   onSurface: Color.fromRGBO(252, 249, 243, 1),
   tertiary: Color.fromRGBO(37, 141, 108, 1),
   onTertiary: Color.fromRGBO(252, 249, 243, 1)
