@@ -372,7 +372,7 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
                           ),
                         ]);
                   } else {
-                    return const CircularProgressIndicator();
+                    return Container(child: CircularProgressIndicator());
                   }
                 }),
           ),
