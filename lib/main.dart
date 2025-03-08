@@ -1,45 +1,19 @@
 import 'dart:async';
 import 'dart:convert';
-import 'dart:io';
 
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:meilisearch/meilisearch.dart';
 import 'package:substring_highlight/substring_highlight.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:gap/gap.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart'
     as fluent_icons;
 import 'theme.dart';
+import 'models/gesetz.dart';
+import 'components/dialog.dart';
 
 Future main() async {
   await dotenv.load(fileName: "./assets/.env");
   runApp(const MyApp());
-}
-
-class Gesetz {
-  final String absaetze;
-  final String name;
-  final String paragraph;
-  final String gesetzname;
-  final String altname;
-
-  const Gesetz({
-    required this.absaetze,
-    required this.gesetzname,
-    required this.name,
-    required this.altname,
-    required this.paragraph,
-  });
-
-  factory Gesetz.fromJson(Map<String, dynamic> json) {
-    return Gesetz(
-        absaetze: json['absaetze'],
-        gesetzname: json['gesetzname'],
-        paragraph: json['paragraph'],
-        name: json['name'],
-        altname: json['altname']);
-  }
 }
 
 class MyApp extends StatelessWidget {
@@ -54,12 +28,8 @@ class MyApp extends StatelessWidget {
         brightness: Brightness.light,
         useMaterial3: true,
       ),
-      darkTheme: ThemeData(
-        colorScheme: darkscheme,
-        brightness: Brightness.dark,
-        useMaterial3: true,
-      ),
-      home: const MyHomePage(title: 'LSV Suche'),
+      darkTheme: personalThemeData,
+      home: const MyHomePage(title: 'LSV Rechtssuche'),
       debugShowCheckedModeBanner: false,
     );
   }
@@ -101,7 +71,8 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
   Future<List<Gesetz>> _ergebnisse = Future.value([]);
 
   Future<void> _initdata() async {
-    final filer = await File("./assets/general.json").readAsString();
+    final filer =
+        await DefaultAssetBundle.of(context).loadString("assets/general.json");
 
     final jsonData = jsonDecode(filer) as List<dynamic>;
     List<Gesetz> dataNew = [];
@@ -111,6 +82,25 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
     setState(() {
       data = dataNew;
     });
+
+    // Declare our store (records are mapd, ids are ints)
+    //var store = intMapStoreFactory.store();
+    //var factory = databaseFactoryWeb;
+
+    // Open the database
+    //var db = await factory.openDatabase('GesetzeDB');
+
+    // Add a new record
+    //var key = await store.add(db, <String, Object?>{'data': jsonEncode(data)});
+
+    // Read the record
+    //var value = await store.record(key).get(db);
+
+    // Print the value
+    //print(value);
+
+    // Close the database
+    //await db.close();
     return;
   }
 
@@ -129,7 +119,8 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
         if (results.length == 20) {
           break;
         }
-        if (value.absaetze.toString().contains(term) && value.altname.contains(filterstring)) {
+        if (value.absaetze.toString().contains(term) &&
+            value.altname.contains(filterstring)) {
           results.add(value);
         }
       }
@@ -156,45 +147,14 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
     });
   }
 
-  Future<void> _showSimpleDialog(String title, String content) async {
+  Future<void> _showDialog(title, String content) async {
     _slideanimation.forward();
     await showDialog(
         context: context,
         builder: (context) {
           return SlideTransition(
               position: _offsetanimation,
-              child: SimpleDialog(
-                  title: Center(
-                      child: Column(
-                    children: [Text(title), Gap(5)],
-                  )),
-                  children: [
-                    Container(
-                      margin: const EdgeInsets.all(20),
-                      child: SelectableText(
-                        content.replaceAll("\\n", "\n\n"),
-                      ),
-                    ),
-                    FractionallySizedBox(
-                      widthFactor: 0.8,
-                      child: TextButton(
-                          onPressed: () {
-                            Navigator.of(context).pop();
-                          },
-                          style: ButtonStyle(
-                            backgroundColor: WidgetStatePropertyAll(
-                                Theme.of(context).colorScheme.secondary),
-                            padding: WidgetStatePropertyAll(
-                                EdgeInsets.only(top: 20, bottom: 20)),
-                          ),
-                          child: Text(
-                            "Zurück",
-                            style: TextStyle(
-                                color:
-                                    Theme.of(context).colorScheme.onSecondary),
-                          )),
-                    )
-                  ]));
+              child: DialogContent(title: title, content: content));
         });
   }
 
@@ -290,6 +250,7 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
+                      // TODO: einen Filter einsetzen wieviele Ergebnisse zurückgegeben werden
                       // TODO: das hier stylen
                       DropdownMenu(
                           controller: _dropdowncontroller,
@@ -323,9 +284,7 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
                             DropdownMenuEntry(
                                 value: "SV-VO", label: "SV Verordnung"),
                             DropdownMenuEntry(value: "OAVO", label: "OAVO"),
-                            DropdownMenuEntry(value: "VOGSV", label: "VOGSV"),
-                            //DropdownMenuEntry(
-                            //    value: "HDigSchulG", label: "HDIGI"),
+                            DropdownMenuEntry(value: "VOGSV", label: "VOGSV")
                           ])
                     ],
                   ),
@@ -343,9 +302,7 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
                       scrollitems.add(
                         GestureDetector(
                           onTap: () {
-                            _showSimpleDialog(
-                                "${citem.gesetzname} ${citem.paragraph} ${citem.name}",
-                                citem.absaetze);
+                            _showDialog("${citem.gesetzname} ${citem.paragraph} ${citem.name}", citem.absaetze);
                           },
                           child: Card(
                             color: Theme.of(context).colorScheme.primary,
@@ -399,7 +356,7 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
                           ),
                         ]);
                   } else {
-                    return Container(child: CircularProgressIndicator());
+                    return CircularProgressIndicator();
                   }
                 }),
           ),
