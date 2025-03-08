@@ -8,7 +8,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:rechtssuche/main.dart';
 import 'package:rechtssuche/pages/index.dart';
 
 void main() {
