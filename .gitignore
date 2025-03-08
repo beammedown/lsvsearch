@@ -47,4 +47,3 @@ app.*.map.json
 *.env
 meili_data/
 *.txt
-*.json
