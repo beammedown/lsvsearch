@@ -1,41 +1,19 @@
-import 'package:flutter/foundation.dart';
+import 'dart:async';
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
-import 'package:meilisearch/meilisearch.dart';
 import 'package:substring_highlight/substring_highlight.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:gap/gap.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart'
     as fluent_icons;
 import 'theme.dart';
+import 'models/gesetz.dart';
+import 'components/dialog.dart';
 
 Future main() async {
   await dotenv.load(fileName: "./assets/.env");
   runApp(const MyApp());
-}
-
-class Gesetz {
-  final int id;
-  final String gesetzname;
-  final String paragraf;
-  final String titel;
-  final String content;
-
-  const Gesetz({
-    required this.id,
-    required this.gesetzname,
-    required this.paragraf,
-    required this.titel,
-    required this.content,
-  });
-
-  factory Gesetz.fromJson(Map<String, dynamic> json) {
-    return Gesetz(
-        id: json['id'],
-        gesetzname: json['gesetz'],
-        paragraf: json['paragraf'],
-        titel: json['titel'],
-        content: json['Inhalt']);
-  }
 }
 
 class MyApp extends StatelessWidget {
@@ -50,12 +28,8 @@ class MyApp extends StatelessWidget {
         brightness: Brightness.light,
         useMaterial3: true,
       ),
-      darkTheme: ThemeData(
-        colorScheme: darkscheme,
-        brightness: Brightness.dark,
-        useMaterial3: true,
-      ),
-      home: const MyHomePage(title: 'LSV Suche'),
+      darkTheme: personalThemeData,
+      home: const MyHomePage(title: 'LSV Rechtssuche'),
       debugShowCheckedModeBanner: false,
     );
   }
@@ -70,17 +44,11 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
-  var index = MeiliSearchClient(
-          dotenv.env['MEILISEARCH_PORT']!.isEmpty
-              ? dotenv.env['MEILISEARCH_URL']!
-              : "${dotenv.env['MEILISEARCH_URL']!}:${dotenv.env['MEILISEARCH_PORT']!}",
-          dotenv.env['MEILISEARCH_API_KEY']!)
-      .index(dotenv.env['MEILISEARCH_INDEX']!);
-
   final _controller = TextEditingController();
   final _dropdowncontroller = TextEditingController();
 
   String filterstring = "";
+  List<Gesetz> data = [];
   bool _showfilter = false;
   double _spinit = 0;
   double _animscale = 1;
@@ -100,75 +68,93 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
     super.dispose();
   }
 
-  Future<List<Gesetz>> _ergebnisse = Future.delayed(
-    const Duration(seconds: 10),
-    () => [],
-  );
+  Future<List<Gesetz>> _ergebnisse = Future.value([]);
+
+  Future<void> _initdata() async {
+    final filer =
+        await DefaultAssetBundle.of(context).loadString("assets/general.json");
+
+    final jsonData = jsonDecode(filer) as List<dynamic>;
+    List<Gesetz> dataNew = [];
+    for (var item in jsonData) {
+      dataNew.add(Gesetz.fromJson(item));
+    }
+    setState(() {
+      data = dataNew;
+    });
+
+    // Declare our store (records are mapd, ids are ints)
+    //var store = intMapStoreFactory.store();
+    //var factory = databaseFactoryWeb;
+
+    // Open the database
+    //var db = await factory.openDatabase('GesetzeDB');
+
+    // Add a new record
+    //var key = await store.add(db, <String, Object?>{'data': jsonEncode(data)});
+
+    // Read the record
+    //var value = await store.record(key).get(db);
+
+    // Print the value
+    //print(value);
+
+    // Close the database
+    //await db.close();
+    return;
+  }
 
   @override
   void initState() {
     super.initState();
-    _ergebnisse = search("HeschG");
+    _initdata();
+
+    _ergebnisse = Future.value(search("HeschG"));
   }
 
-  Future<List<Gesetz>> search(String term) async {
-    if (kDebugMode) {
-      print("searching: $term");
+  List<Gesetz> search(String term) {
+    List<Gesetz> results = [];
+    if (filterstring != "") {
+      for (var value in data) {
+        if (results.length == 20) {
+          break;
+        }
+        if (value.absaetze.toString().contains(term) &&
+            value.altname.contains(filterstring)) {
+          results.add(value);
+        }
+      }
+
+      return results;
     }
-    var result = await index.search(term, SearchQuery(filter: [filterstring]));
-    List<Gesetz> someone = [];
-    for (int i = 0; i < result.hits.length - 1; i++) {
-      someone.add(Gesetz.fromJson(result.hits[i]));
+    for (var value in data) {
+      if (results.length == 20) {
+        break;
+      }
+      if (value.absaetze.toString().contains(term)) {
+        results.add(value);
+      }
     }
-    return someone;
+
+    return results;
   }
 
-  Future<void> searchWrapper(String term) async {
+  void searchWrapper(String term) {
     var res = search(term);
+
     setState(() {
-      _ergebnisse = res;
+      _ergebnisse = Future.value(res);
     });
   }
 
-  Future<void> _showSimpleDialog(String title, String content) async {
+  Future<void> _showDialog(title, String content) async {
     _slideanimation.forward();
     await showDialog(
         context: context,
         builder: (context) {
           return SlideTransition(
               position: _offsetanimation,
-              child: SimpleDialog(
-                  title: Center(
-                      child: Column(
-                    children: [Text(title), Gap(5)],
-                  )),
-                  children: [
-                    Container(
-                      margin: const EdgeInsets.all(20),
-                      child: SelectableText(
-                        content.replaceAll("\\n", "\n\n"),
-                      ),
-                    ),
-                    FractionallySizedBox(
-                      widthFactor: 0.8,
-                      child: TextButton(
-                          onPressed: () {
-                            Navigator.of(context).pop();
-                          },
-                          style: ButtonStyle(
-                            backgroundColor: WidgetStatePropertyAll(
-                                Theme.of(context).colorScheme.secondary),
-                            padding: WidgetStatePropertyAll(
-                                EdgeInsets.only(top: 20, bottom: 20)),
-                          ),
-                          child: Text(
-                            "Zurück",
-                            style: TextStyle(
-                                color:
-                                    Theme.of(context).colorScheme.onSecondary),
-                          )),
-                    )
-                  ]));
+              child: DialogContent(title: title, content: content));
         });
   }
 
@@ -193,7 +179,7 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
                     suffixIcon: _controller.value.text != ""
                         ? AnimatedScale(
                             scale: _animscale,
-                            duration: Durations.medium1,
+                            duration: Durations.short2,
                             onEnd: () {
                               setState(() {
                                 _animscale = 1;
@@ -264,6 +250,7 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
+                      // TODO: einen Filter einsetzen wieviele Ergebnisse zurückgegeben werden
                       // TODO: das hier stylen
                       DropdownMenu(
                           controller: _dropdowncontroller,
@@ -280,7 +267,7 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
                                 else
                                   {
                                     setState(() {
-                                      filterstring = "gesetz = $val";
+                                      filterstring = "$val";
                                     }),
                                     searchWrapper(_controller.text)
                                   }
@@ -292,14 +279,12 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
                             DropdownMenuEntry(
                                 value: "VerfHe", label: "Hessische Verfassung"),
                             DropdownMenuEntry(
-                                value: "Heschg",
+                                value: "HSchG",
                                 label: "Hessisches Schulgesetz"),
                             DropdownMenuEntry(
-                                value: "Sch_StudVtrV", label: "SV Verordnung"),
+                                value: "SV-VO", label: "SV Verordnung"),
                             DropdownMenuEntry(value: "OAVO", label: "OAVO"),
-                            DropdownMenuEntry(value: "VOGSV", label: "VOGSV"),
-                            DropdownMenuEntry(
-                                value: "HDigSchulG", label: "HDIGI"),
+                            DropdownMenuEntry(value: "VOGSV", label: "VOGSV")
                           ])
                     ],
                   ),
@@ -317,9 +302,7 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
                       scrollitems.add(
                         GestureDetector(
                           onTap: () {
-                            _showSimpleDialog(
-                                "${citem.gesetzname} §${citem.paragraf} ${citem.titel}",
-                                citem.content);
+                            _showDialog("${citem.gesetzname} ${citem.paragraph} ${citem.name}", citem.absaetze);
                           },
                           child: Card(
                             color: Theme.of(context).colorScheme.primary,
@@ -327,7 +310,7 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
                             child: Column(
                               children: [
                                 Text(
-                                  "${citem.gesetzname} §${citem.paragraf} ${citem.titel}",
+                                  "${citem.gesetzname} ${citem.paragraph} ${citem.name}",
                                   style: TextStyle(
                                       color: Theme.of(context)
                                           .colorScheme
@@ -339,7 +322,8 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
                                   padding: const EdgeInsets.only(
                                       left: 10, bottom: 10),
                                   child: SubstringHighlight(
-                                    text: citem.content.replaceAll("\\n", "\n"),
+                                    text:
+                                        citem.absaetze.replaceAll("\\n", "\n"),
                                     term: _controller.text,
                                     textStyle: TextStyle(
                                         color: Theme.of(context)
@@ -372,7 +356,7 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
                           ),
                         ]);
                   } else {
-                    return const CircularProgressIndicator();
+                    return CircularProgressIndicator();
                   }
                 }),
           ),
