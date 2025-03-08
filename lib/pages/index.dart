@@ -163,7 +163,7 @@ class _IndexPageState extends State<IndexPage> with TickerProviderStateMixin {
     super.initState();
     _initdata();
     
-    searchWrapper("HSchG");
+    searchWrapper("");
   }
 
   final FocusNode _focy = FocusNode();
@@ -172,7 +172,7 @@ class _IndexPageState extends State<IndexPage> with TickerProviderStateMixin {
   Widget build(BuildContext context) {
     return Shortcuts(
         shortcuts: <LogicalKeySet, Intent>{
-          LogicalKeySet(LogicalKeyboardKey.control, LogicalKeyboardKey.keyS):
+          LogicalKeySet(LogicalKeyboardKey.control, LogicalKeyboardKey.keyK):
               SearchIntent(),
         },
         child: Actions(
