@@ -37,4 +37,19 @@ material.ThemeData personalThemeData = material.ThemeData(
         selectionHandleColor: Color.fromRGBO(252, 249, 243, 1)));
 
 FluentThemeData fluentThemeData = FluentThemeData(
-    accentColor: SystemTheme.accentColor.accent.toAccentColor());
+  scaffoldBackgroundColor: Color.fromRGBO(32, 32, 32, 1),
+  cardColor: Color.fromRGBO(40, 40, 40, 1),
+  micaBackgroundColor: Color.fromRGBO(32, 32, 32, 1),
+  acrylicBackgroundColor: Color.fromRGBO(32, 32, 32, 1),
+  typography: Typography.fromBrightness(brightness: Brightness.dark),
+  iconTheme: IconThemeData(
+    color: Colors.white
+  ),
+  dialogTheme: ContentDialogThemeData(
+    decoration: BoxDecoration(
+      borderRadius: BorderRadius.all(Radius.circular(8)),
+      color: Color.fromRGBO(50, 50, 50, 1)
+    ),
+  ),
+    accentColor: SystemTheme.accentColor.accent.toAccentColor()
+);
