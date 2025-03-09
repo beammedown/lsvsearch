@@ -812,7 +812,7 @@ var $async$YQ=A.R(function(b,c){if(b===1)return A.N(c,r)
 while(true)switch(s){case 0:n={}
 l=t.Lk
 s=3
-return A.U(A.uc(a.yb("lsvsearch/FontManifest.json")),$async$YQ)
+return A.U(A.uc(a.yb("FontManifest.json")),$async$YQ)
 case 3:m=l.a(c)
 if(!m.gDO()){$.dT().$1("Font manifest does not exist at `"+m.a+"` - ignoring.")
 q=new A.wr(A.a([],t.z8))
@@ -77967,7 +77967,7 @@ i.toString
 h=t.j
 g=B.bS
 s=3
-return A.U(A.auv(i).aet("lsvsearch/assets/general.json"),$async$uq)
+return A.U(A.auv(i).aet("assets/general.json"),$async$uq)
 case 3:o=h.a(g.ON(b,null))
 n=A.a([],t.UJ)
 for(i=J.aV(o);i.n();){m=i.gJ()
