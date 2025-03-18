@@ -15,7 +15,7 @@ jobs:
           channel: 'stable'
       - run: flutter pub get
       - run: flutter config --enable-web
-      - run: flutter build web
+      - run: flutter build web --base-href "/lsvsearch/"
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
         with:
